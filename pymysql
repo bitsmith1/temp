@@ -1,0 +1,43 @@
+import pymysql
+
+def execute_query(connection, query, params=None):
+    # Create a cursor object
+    cursor = connection.cursor()
+
+    try:
+        # Execute the query with parameters
+        cursor.execute(query, params)
+
+        # Fetch the results
+        results = cursor.fetchall()
+        
+        # Commit the changes (if any)
+        connection.commit()
+
+        return results
+    except Exception as e:
+        # Handle the exception (e.g., print an error message)
+        print(f"Error executing query: {e}")
+        
+        # Rollback the changes (if any)
+        connection.rollback()
+    finally:
+        # Close the cursor
+        cursor.close()
+
+# Example usage
+connection = pymysql.connect(host='your_host',
+                             user='your_user',
+                             password='your_password',
+                             database='your_database',
+                             cursorclass=pymysql.cursors.DictCursor)
+
+query = "SELECT * FROM your_table WHERE column1 = %s AND column2 = %s"
+params = ("value1", "value2")
+
+results = execute_query(connection, query, params)
+for row in results:
+    print(row)
+
+# Close the connection
+connection.close()
