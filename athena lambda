@@ -1,0 +1,44 @@
+import boto3
+
+def lambda_handler(event, context):
+    # Create Athena client
+    athena_client = boto3.client('athena')
+    
+    # Start query execution
+    query = "SELECT * FROM your_table"
+    response = athena_client.start_query_execution(
+        QueryString=query,
+        QueryExecutionContext={
+            'Database': 'your_database'
+        },
+        ResultConfiguration={
+            'OutputLocation': 's3://your-query-results-bucket/'
+        }
+    )
+    
+    # Retrieve query execution ID
+    query_execution_id = response['QueryExecutionId']
+    
+    # Get query execution status
+    query_status = athena_client.get_query_execution(
+        QueryExecutionId=query_execution_id
+    )['QueryExecution']['Status']['State']
+    
+    # Wait for the query to complete
+    while query_status in ['QUEUED', 'RUNNING']:
+        query_status = athena_client.get_query_execution(
+            QueryExecutionId=query_execution_id
+        )['QueryExecution']['Status']['State']
+    
+    # Retrieve query results
+    if query_status == 'SUCCEEDED':
+        query_results = athena_client.get_query_results(
+            QueryExecutionId=query_execution_id
+        )
+        # Process the query results as needed
+        # ...
+    
+    return {
+        'statusCode': 200,
+        'body': 'Query execution completed'
+    }
