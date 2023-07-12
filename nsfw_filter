@@ -1,0 +1,21 @@
+from nsfw_detector import predict
+import profanity_check
+
+from textblob import TextBlob
+
+def profanity_check_text():
+    text = "This is a sample text that may contain NSFW language."
+    profanity_prob = profanity_check.predict_prob([text])[0]
+
+    if profanity_prob > 0.5:
+        print("The text is classified as containing profanity.")
+    else:
+        print("The text is clean.")
+
+
+def sentiment_check():
+    text = "Such a bad movie! Such a pathetic movie. Thinks can be good."
+    blob = TextBlob(text)
+
+    polarity = blob.sentiment.polarity
+    print(polarity)
