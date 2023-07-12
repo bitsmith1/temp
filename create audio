@@ -1,0 +1,16 @@
+import requests
+
+def download_audio(url, file_path):
+    response = requests.get(url, stream=True)
+    response.raise_for_status()
+
+    with open(file_path, 'wb') as file:
+        for chunk in response.iter_content(chunk_size=8192):
+            if chunk:
+                file.write(chunk)
+
+# Example usage
+presigned_url = 'https://your-presigned-url'  # Replace with your presigned URL
+save_path = 'path/to/save/file.mp3'  # Replace with the desired file path
+
+download_audio(presigned_url, save_path)
