@@ -1,0 +1,10 @@
+{
+            "Sid": "GlueAccess",
+            "Effect": "Allow",
+            "Action": [
+                "glue:GetTable"
+            ],
+            "Resource": [
+                "arn:aws:glue:your-region:your-account-id:catalog"
+            ]
+        }
