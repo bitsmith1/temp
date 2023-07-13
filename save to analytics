@@ -1,0 +1,23 @@
+from datetime import datetime
+
+def save_to_analytics_db(raw_prompt=None, additional_inputs=None, engineered_prompt=None, generated_content_id=None, content_type=None):
+
+    document = {}
+
+    if raw_prompt is not None:
+        document['raw_prompt'] = raw_prompt
+    if additional_inputs is not None:
+        document['additional_inputs'] = additional_inputs
+    if engineered_prompt is not None:
+        document['engineered_prompt'] = engineered_prompt
+    if generated_content_id is not None:
+        document['generated_content_id'] = generated_content_id
+    if content_type is not None:
+        document['content_type'] = content_type
+
+    document['timestamp'] = datetime.now()
+
+    result = analytics_collection.insert_one(document)
+    document_id = result.inserted_id
+
+    return document_id
