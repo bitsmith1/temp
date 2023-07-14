@@ -1,0 +1,53 @@
+sfrom flask import Flask, request
+from pymongo import MongoClient
+
+app = Flask(__name__)
+client = MongoClient("mongodb://localhost:27017/")  # Replace with your MongoDB connection URL
+db = client["analytics"]  # Replace with your analytics database name
+collection = db["stories"]  # Replace with your collection name
+
+@app.route("/relevance_score", methods=["POST"])
+def calculate_relevance_score():
+    data = request.json
+
+    # Retrieve parameters from the request data
+    profanityscore_weight = 0.2
+    sensitivityscore_weight = 0.3
+    system_emotion_weight = 0.1
+    like_dislike_weight = 0.2
+    report_weight = 0.2
+
+    relevance_score = 0
+    total_stories = 0
+
+    # Query the analytics database for stories with content-type "story"
+    stories = collection.find({"content-type": "story"})
+
+    for story in stories:
+        if "like_dislike" in story:
+            relevance_score += story["like_dislike"] * like_dislike_weight
+
+        if "report" in story:
+            relevance_score -= story["report"] * report_weight
+
+        relevance_score += (
+            story["profanityscore"] * profanityscore_weight +
+            story["sensitivityscore"] * sensitivityscore_weight
+        )
+
+        total_stories += 1
+
+    # Consider system's emotion in relevance score calculation
+    system_emotion = data.get("emotion", "neutral")
+    if system_emotion == "good":
+        relevance_score += system_emotion_weight
+    elif system_emotion == "bad":
+        relevance_score -= system_emotion_weight
+
+    if total_stories > 0:
+        relevance_score /= total_stories
+
+    return {"relevance_score": relevance_score}
+
+if __name__ == "__main__":
+    app.run()
