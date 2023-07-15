@@ -1,0 +1,25 @@
+from profanity_check import predict
+from textblob import TextBlob
+
+def check_profanity(text, threshold=0.5):
+    profanity_prob = predict([text])[0]
+    return profanity_prob > threshold, profanity_prob
+
+def check_sentiment(text, threshold=0):
+    blob = TextBlob(text)
+    polarity = blob.sentiment.polarity
+    return polarity < threshold, polarity
+
+def classify_text_as_nsfw(text, profanity_threshold=0.5, polarity_threshold=0):
+    profanity_detected, profanity_score = check_profanity(text, profanity_threshold)
+    sentiment_detected, sentiment_score = check_sentiment(text, polarity_threshold)
+
+    detected = profanity_detected or sentiment_detected
+
+    response = {
+        "detected": detected,
+        "profanity_score": profanity_score,
+        "sentiment_score": sentiment_score
+    }
+
+    return response
