@@ -1,0 +1,14 @@
+
+@app.route('/analytics/dislike/<generated_content_id>', methods=['GET'])
+def add_dislike(generated_content_id):
+    # Update the like field for the document to False
+    mongo.db.analytics.update_one({'generated_content_id': generated_content_id}, {'$set': {'like': False}})
+
+    return jsonify({'message': 'Dislike updated successfully'})
+
+@app.route('/analytics/like/<generated_content_id>', methods=['GET'])
+def add_like(generated_content_id):
+    # Update the like field for the document to True
+    mongo.db.analytics.update_one({'generated_content_id': generated_content_id}, {'$set': {'like': True}})
+
+    return jsonify({'message': 'Like updated successfully'})
