@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# Create a temporary directory
+mkdir -p temp/cx_oracle_layer
+cd temp/cx_oracle_layer
+
+# Install cx_Oracle using pip
+pip install cx_Oracle -t .
+
+# Remove unnecessary files and directories
+find . -name "*.so" -type f -delete
+find . -name "*.pyc" -type f -delete
+find . -type d -name "tests" -exec rm -rf {} +
+
+# Create a zip file for the Lambda layer
+zip -r9 cx_oracle_layer.zip .
+
+# Move the zip file to the parent directory
+mv cx_oracle_layer.zip ../..
+
+# Clean up temporary files
+cd ../..
+rm -rf temp
+
+# Print the path to the created zip file
+echo "Lambda layer created: $(pwd)/cx_oracle_layer.zip"
