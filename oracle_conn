@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# Step 1: Set up a Python 3.9 environment
+python3.9 -m venv cx_oracle_env
+source cx_oracle_env/bin/activate
+
+# Step 2: Install CX_Oracle
+pip install cx_Oracle
+
+# Step 3: Create a deployment directory
+mkdir -p cx_oracle_layer/python/site-packages
+
+# Step 4: Copy CX_Oracle files
+cp -R cx_oracle_env/lib/python3.9/site-packages/cx_Oracle cx_oracle_layer/python/site-packages
+
+# Step 5: Zip the layer contents
+cd cx_oracle_layer
+zip -r9 cx_oracle_layer.zip .
+
+# Step 6: Create a Lambda layer
+aws lambda publish-layer-version --layer-name cx_oracle_layer --zip-file fileb://cx_oracle_layer.zip --compatible-runtimes python3.9
+
+# Step 7: Clean up
+cd ..
+deactivate
+rm -rf cx_oracle_env
+rm -rf cx_oracle_layer
+
+echo "Lambda layer creation completed."
