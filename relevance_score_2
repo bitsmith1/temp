@@ -1,0 +1,91 @@
+from pymongo import MongoClient
+
+# Connect to MongoDB
+client = MongoClient("mongodb://localhost:27017")
+db = client["analytics_db"]
+collection = db["analytics_collection"]
+feedback_collection = db["feedback_collection"]
+
+def calculate_relevance_score():
+    # Fetch all documents from the analytics collection
+    documents = collection.find({})
+    
+    total_generations = documents.count()  # Calculate the total number of generations
+    
+    # Initialize variables for relevance score calculation
+    weighted_nsfw_score = 0
+    weighted_response_time = 0
+    total_likes = 0
+    total_dislikes = 0
+    total_reports = 0
+    
+    # Iterate over each document to calculate weighted scores and aggregate counts
+    for document in documents:
+        nsfw_score = document["nsfwscores"]
+        response_time = document["responsetime"]
+        
+        # Calculate weighted NSFW score
+        weighted_nsfw_score += nsfw_score
+        
+        # Calculate weighted response time
+        weighted_response_time += response_time
+        
+        # Check if the like field exists in the document
+        if "like" in document:
+            total_likes += document["like"]
+        
+        # Check if the dislike field exists in the document
+        if "dislike" in document:
+            total_dislikes += document["dislike"]
+        
+        # Check if the report field exists in the document
+        if "report" in document:
+            total_reports += document["report"]
+    
+    # Calculate average weighted NSFW score
+    average_nsfw_score = weighted_nsfw_score / total_generations
+    
+    # Calculate average weighted response time
+    average_response_time = weighted_response_time / total_generations
+    
+    # Calculate the ratio of likes to dislikes
+    likes_dislikes_ratio = total_likes / total_dislikes if total_dislikes != 0 else total_likes
+    
+    # Calculate the ratio of reports to total generations
+    reports_generations_ratio = total_reports / total_generations
+    
+    # Fetch all feedback documents from the feedback collection
+    feedback_documents = feedback_collection.find({})
+    
+    total_feedbacks = feedback_documents.count()  # Calculate the total number of feedbacks
+    
+    # Initialize variables for feedback calculation
+    total_happy = 0
+    total_neutral = 0
+    total_sad = 0
+    
+    # Iterate over each feedback document to aggregate counts
+    for feedback_document in feedback_documents:
+        emotion = feedback_document["emotion"]
+        
+        if emotion == "happy":
+            total_happy += 1
+        elif emotion == "neutral":
+            total_neutral += 1
+        elif emotion == "sad":
+            total_sad += 1
+    
+    # Calculate the ratio of happy feedbacks to total feedbacks
+    happy_feedback_ratio = total_happy / total_feedbacks
+    
+    # Calculate the ratio of sad feedbacks to total feedbacks
+    sad_feedback_ratio = total_sad / total_feedbacks
+    
+    # Calculate relevance score using the above parameters and feedback ratios
+    relevance_score = (average_nsfw_score + average_response_time) * likes_dislikes_ratio * (1 - reports_generations_ratio) * (happy_feedback_ratio - sad_feedback_ratio)
+    
+    return relevance_score
+
+# Call the function to get the relevance score
+relevance_score = calculate_relevance_score()
+print("Relevance Score:", relevance_score)
