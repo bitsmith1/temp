@@ -1,0 +1,73 @@
+import spacy
+
+# Load the English language model
+nlp = spacy.load('en_core_web_sm')
+
+# Example story (replace with your own story)
+story = '''In a small village nestled near the Enchanted Forest, three curious friends—Emily, Alex, and Sophie—embarked on an extraordinary expedition. Rumors of the forest's mystical inhabitants and magical wonders filled their imaginations.
+
+With their backpacks filled with supplies and hearts brimming with excitement, they ventured into the dense foliage. As they journeyed deeper, they encountered talking animals, mischievous fairies, and towering trees whispering ancient secrets.
+
+Amidst the enchantment, they stumbled upon a lost baby unicorn named Sparkle. Separated from its family, Sparkle was frightened and alone. Determined to help, the friends formed a bond with the unicorn, promising to reunite it with its kin.
+
+Their quest led them through treacherous paths, across sparkling rivers, and into hidden clearings. Along the way, they encountered challenges that tested their friendship. But through cooperation, trust, and unwavering support, they overcame each obstacle, their bond growing stronger with every step.
+
+Finally, guided by the wisdom of a wise old owl named Sage, they found the unicorn family deep within the heart of the forest. Joyful reunions filled the air as Sparkle's parents expressed their gratitude. The friends basked in the glow of their accomplishment, realizing the power of friendship and the strength it brings.
+
+As they bid farewell to the enchanted forest, their hearts were forever touched by its magic. The village listened in awe as they shared tales of their adventure, reminding everyone of the extraordinary things that can be achieved through unity and friendship.
+
+The Enchanted Forest Expedition became a cherished memory, a testament to the power of companionship, and a reminder that true magic lies within the bonds we forge with others.
+
+And so, Emily, Alex, and Sophie carried the lessons they learned throughout their lives, cherishing the gift of friendship and forever grateful for their unforgettable journey through the Enchanted Forest.'''
+
+# Process the story using spaCy
+doc = nlp(story)
+
+# Extract nouns and adjectives
+nouns_adjectives = [token.text for token in doc if token.pos_ in ['NOUN', 'ADJ']]
+
+# Extract named entities of type 'GPE' (locations), 'ORG' (organizations), 'PERSON' (persons), and 'EVENT' (events)
+locations = set()
+organizations = set()
+persons = set()
+events = set()
+
+for ent in doc.ents:
+    if ent.label_ == 'GPE':
+        locations.add(ent.text)
+    elif ent.label_ == 'ORG':
+        organizations.add(ent.text)
+    elif ent.label_ == 'PERSON':
+        persons.add(ent.text)
+    elif ent.label_ == 'EVENT':
+        events.add(ent.text)
+
+# Define common words or stopwords to be removed
+common_words = {'a', 'an', 'the', 'is', 'was', 'were', 'has', 'have', 'had', 'and', 'or', 'but', 'to', 'in', 'on', 'at', 'from', 'for', 'of', 'with', 'by'}
+
+# Generate image prompt from features, removing duplicates and common words
+image_prompt = ""
+if locations:
+    filtered_locations = [loc for loc in locations if loc.lower() not in common_words]
+    image_prompt += "In a " + ', '.join(filtered_locations) + ", " if filtered_locations else ""
+if nouns_adjectives:
+    filtered_nouns_adjectives = [na for na in nouns_adjectives if na.lower() not in common_words]
+    image_prompt += "there was a " + ', '.join(filtered_nouns_adjectives) + ". " if filtered_nouns_adjectives else ""
+if organizations:
+    filtered_organizations = [org for org in organizations if org.lower() not in common_words]
+    image_prompt += "The story involved " + ', '.join(filtered_organizations) + ". " if filtered_organizations else ""
+if persons:
+    filtered_persons = [person for person in persons if person.lower() not in common_words]
+    image_prompt += "The main character, " + ', '.join(filtered_persons) + ", played a crucial role. " if filtered_persons else ""
+if events:
+    filtered_events = [event for event in events if event.lower() not in common_words]
+    image_prompt += "The story unfolded during the " + ', '.join(filtered_events) + ". " if filtered_events else ""
+
+hashtags = filtered_events + filtered_locations + filtered_persons
+
+#further_enhancement ='''Envision an image of exceptional quality and clarity, characterized by highly detailed visuals and vivid colors. This image is in 4K resolution with HDR, providing a lifelike and immersive experience. Every element in the picture is captured with sharp focus, allowing you to perceive even the smallest details. The image is expertly composed and visually stunning, as it has been recognized and awarded for its remarkable artistry. Let the richness and depth of this high-resolution image inspire your creative response'''
+# Print the image prompt
+further_enhancement ='''Envision a visually striking image that combines the best of both worlds: a 3D cartoon-style masterpiece with exceptional quality and clarity. This image is rendered in high resolution, allowing for intricate details and vibrant colors to come to life. The 3D elements within the image add depth and dimension, providing a unique visual experience. With its expert composition and artistry, this award-winning image showcases a seamless blend of realism and imaginative cartoon aesthetics. Let the charm and creativity of this 3D cartoon-style image enhance your creative response.'''
+image_prompt+= further_enhancement
+print("Image Prompt:", image_prompt)
+
