@@ -1,0 +1,39 @@
+import json
+
+# Your static JSON data represented as Python variables
+data = {
+    "story": [
+        {
+            "text": {
+                "content": "Once upon a time, in a faraway land, there was a brave knight named Sir Lancelot.",
+                "nsfw_score": 0.01
+            },
+            "image": {
+                "url": "http://example.com/images/knight.jpg",
+                "caption": "Sir Lancelot, the brave knight"
+            },
+            "audio": {
+                "url": "http://example.com/audio/knight_theme.mp3",
+                "duration": "2 minutes"
+            }
+        }
+    ],
+    "familyhub_art": {
+        "text": {
+            "content": "A whimsical painting depicting a happy family enjoying their time together.",
+            "nsfw_score": 0.0
+        }
+    },
+    "familyhub_recipe": {
+        "text": {
+            "content": "Delicious and healthy banana muffins recipe:\n\nIngredients:\n- 2 ripe bananas\n- 1/2 cup sugar\n- 1/4 cup melted butter\n- 1 tsp vanilla extract\n- 1 1/2 cups all-purpose flour\n- 1 tsp baking powder\n- 1/2 tsp baking soda\n- Pinch of salt\n\nInstructions:\n1. Preheat oven to 350°F (175°C) and grease a muffin tin.\n2. In a bowl, mash the ripe bananas with a fork.\n3. Add sugar, melted butter, and vanilla extract to the mashed bananas, and mix well.\n4. In a separate bowl, whisk together the flour, baking powder, baking soda, and salt.\n5. Combine the wet and dry ingredients, and stir until just combined.\n6. Pour the batter into the muffin tin, filling each cup about 2/3 full.\n7. Bake for 18-20 minutes or until a toothpick inserted into the center of a muffin comes out clean.\n8. Let the muffins cool in the tin for a few minutes before transferring them to a wire rack to cool completely.\n\nEnjoy these delicious banana muffins with your family!",
+            "nsfw_score": 0.0
+        }
+    }
+}
+
+# Convert Python dictionary to JSON string
+json_data = json.dumps(data, indent=2)
+
+# Print the JSON string
+print(json_data)
