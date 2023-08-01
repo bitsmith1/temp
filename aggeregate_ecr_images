@@ -1,0 +1,48 @@
+import pandas as pd
+import os
+
+# Function to process a single Excel file and extract data
+def process_excel_file(file_path):
+    df = pd.read_excel(file_path)
+    # Extract the clustername from the file name
+    clustername = os.path.splitext(os.path.basename(file_path))[0].split('_')[-1]
+
+    # Add the clustername to the service names
+    df['service'] = 'STG-' + clustername + '-APPS-' + df['service'].apply(lambda x: x.split('-APPS-')[-1])
+
+    return df[['service', 'image_uri']]
+
+# Main function to process all Excel files
+def process_all_files(input_directory, output_file):
+    all_data = []
+
+    # Loop through all Excel files in the input directory
+    for file in os.listdir(input_directory):
+        if file.endswith('.xlsx'):
+            file_path = os.path.join(input_directory, file)
+            data = process_excel_file(file_path)
+            all_data.append(data)
+
+    # Concatenate all data frames into a single data frame
+    final_df = pd.concat(all_data, ignore_index=True)
+
+    # Group by service name and aggregate image_uri as comma-separated values
+    final_df = final_df.groupby('service', as_index=False).agg({'image_uri': ','.join})
+
+    # Extract the servicetag from the service name
+    final_df['servicetag'] = final_df['service'].apply(lambda x: x.split('-APPS-')[-1])
+
+    # Select only the relevant columns and return the result
+    final_df = final_df[['service', 'servicetag', 'image_uri']]
+
+    # Write the output to a CSV file
+    final_df.to_csv(output_file, index=False)
+
+# Input directory containing all the Excel files
+input_directory = 'path/to/your/excel/files'
+
+# Output CSV file path
+output_file = 'output.csv'
+
+# Process all files and create the output CSV
+process_all_files(input_directory, output_file)
