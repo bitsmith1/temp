@@ -1,0 +1,69 @@
+import pandas as pd
+import os
+
+# Function to extract clustername from the service name
+def extract_clustername(service_name):
+    return service_name.split('-')[1]
+
+# Function to process a single space-separated text file and extract data
+def process_txt_file(file_path):
+    df = pd.read_csv(file_path, sep=r'\s+')
+
+    # Extract the clustername from the 'service' column
+    df['clustername'] = df['service'].apply(extract_clustername)
+
+    # Add the '[{clustername}]' prefix to each 'Image URI'
+    df['image_uri'] = df.apply(lambda row: f'[{row["clustername"]}] {row["image_uri"]}', axis=1)
+
+    return df[['service', 'clustername', 'image_uri']]
+
+# Main function to process all space-separated text files
+def process_all_files(input_directory, output_file):
+    all_data_stg = []
+    all_data_prd = []
+
+    # Loop through all space-separated text files in the input directory
+    for file in os.listdir(input_directory):
+        if file.endswith('.txt'):
+            file_path = os.path.join(input_directory, file)
+            data = process_txt_file(file_path)
+            if data['service'].str.startswith('STG').any():
+                all_data_stg.append(data)
+            if data['service'].str.startswith('PRD').any():
+                all_data_prd.append(data)
+
+    # Concatenate all data frames into a single data frame for STG and PRD prefixes
+    final_df_stg = pd.concat(all_data_stg, ignore_index=True)
+    final_df_prd = pd.concat(all_data_prd, ignore_index=True)
+
+    # Group by service name and aggregate image_uri as line-separated values for STG
+    final_df_stg = final_df_stg.groupby('service', as_index=False).agg({'image_uri': '\n'.join})
+
+    # Group by service name and aggregate image_uri as line-separated values for PRD
+    final_df_prd = final_df_prd.groupby('service', as_index=False).agg({'image_uri': '\n'.join})
+
+    # Extract the servicetag from the service name for STG and PRD
+    final_df_stg['servicetag'] = final_df_stg['service'].apply(lambda x: x.split('-APPS-')[-1])
+    final_df_prd['servicetag'] = final_df_prd['service'].apply(lambda x: x.split('-APPS-')[-1])
+
+    # Select only the relevant columns and return the result
+    final_df_stg = final_df_stg[['service', 'servicetag', 'image_uri']]
+    final_df_prd = final_df_prd[['service', 'servicetag', 'image_uri']]
+
+    # Rename the 'image_uri' column for PRD
+    final_df_prd = final_df_prd.rename(columns={'image_uri': 'image_uri_PRD'})
+
+    # Merge the final dataframes for STG and PRD on 'servicetag'
+    final_df = pd.merge(final_df_stg, final_df_prd, on='servicetag', how='outer')
+
+    # Write the output to a CSV file
+    final_df.to_csv(output_file, index=False)
+
+# Input directory containing all the space-separated text files
+input_directory = 'path/to/your/space_separated_files'
+
+# Output CSV file path
+output_file = 'output.csv'
+
+# Process all files and create the output CSV
+process_all_files(input_directory, output_file)
