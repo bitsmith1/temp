@@ -48,6 +48,10 @@ for SERVICE in $SERVICES; do
     echo "$SERVICE,$IMAGE_URI" >> $CSV_FILE
 done
 
+//copy file 
+aws s3 cp ./ecs_service_images.csv s3://my-s3-bucket/ecs_service_images.csv
+
+
 echo "CSV file $CSV_FILE has been created with the service and corresponding Image URI columns."
 
 // read csv in terminal 
