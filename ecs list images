@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# Replace <your-cluster-name> with the actual name of your ECS cluster
+cluster_name="your-ecs-cluster-name"
+
+# Get the list of services in the cluster
+services=$(aws ecs list-services --cluster $cluster_name --output text --query 'serviceArns')
+
+for service in $services; do
+    # Get the task ID of the running task for each service
+    task_id=$(aws ecs list-tasks --cluster $cluster_name --service-name $service --desired-status RUNNING --output text --query 'taskArns[0]')
+
+    # Get the container instance ID for the task
+    container_instance_id=$(aws ecs describe-tasks --cluster $cluster_name --tasks $task_id --output text --query 'tasks[0].containerInstanceArn')
+
+    # Get the container instance information
+    container_instance=$(aws ecs describe-container-instances --cluster $cluster_name --container-instances $container_instance_id --output json)
+
+    # Get the container image name from the container instance information
+    image=$(echo $container_instance | jq -r '.containerInstances[0].image')
+
+    echo "Service: $service, Image: $image"
+done
