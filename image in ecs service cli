@@ -22,3 +22,33 @@ for SERVICE in $SERVICES; do
     echo "Image URI: $IMAGE_URI"
     echo "-------------------"
 done
+
+// create csv 
+
+#!/bin/bash
+
+# Replace <YOUR_CLUSTER_NAME> with your actual ECS cluster name
+CLUSTER_NAME="<YOUR_CLUSTER_NAME>"
+
+# Get a list of all services in the cluster
+SERVICES=$(aws ecs list-services --cluster $CLUSTER_NAME --query 'serviceArns' --output text)
+
+# Create a CSV file to store the data
+CSV_FILE="ecs_service_images.csv"
+
+# Create the header for the CSV file
+echo "Service,Image_URI" > $CSV_FILE
+
+# Loop through each service and get its running image URI
+for SERVICE in $SERVICES; do
+    TASK_DEFINITION=$(aws ecs describe-services --cluster $CLUSTER_NAME --services $SERVICE --query 'services[0].deployments[?status==`PRIMARY`].taskDefinition' --output text)
+    IMAGE_URI=$(aws ecs describe-task-definition --task-definition $TASK_DEFINITION --query 'taskDefinition.containerDefinitions[0].image' --output text)
+    
+    # Append the service and image URI information to the CSV file
+    echo "$SERVICE,$IMAGE_URI" >> $CSV_FILE
+done
+
+echo "CSV file $CSV_FILE has been created with the service and corresponding Image URI columns."
+
+// read csv in terminal 
+cat ecs_service_images.csv
