@@ -1,9 +1,9 @@
 import pandas as pd
 import os
 
-# Function to process a single Excel file and extract data
-def process_excel_file(file_path):
-    df = pd.read_excel(file_path)
+# Function to process a single CSV file and extract data
+def process_csv_file(file_path):
+    df = pd.read_csv(file_path)
     # Extract the clustername from the file name
     clustername = os.path.splitext(os.path.basename(file_path))[0].split('_')[-1]
 
@@ -12,15 +12,15 @@ def process_excel_file(file_path):
 
     return df[['service', 'image_uri']]
 
-# Main function to process all Excel files
+# Main function to process all CSV files
 def process_all_files(input_directory, output_file):
     all_data = []
 
-    # Loop through all Excel files in the input directory
+    # Loop through all CSV files in the input directory
     for file in os.listdir(input_directory):
-        if file.endswith('.xlsx'):
+        if file.endswith('.csv'):
             file_path = os.path.join(input_directory, file)
-            data = process_excel_file(file_path)
+            data = process_csv_file(file_path)
             all_data.append(data)
 
     # Concatenate all data frames into a single data frame
@@ -38,8 +38,8 @@ def process_all_files(input_directory, output_file):
     # Write the output to a CSV file
     final_df.to_csv(output_file, index=False)
 
-# Input directory containing all the Excel files
-input_directory = 'path/to/your/excel/files'
+# Input directory containing all the CSV files
+input_directory = 'path/to/your/csv/files'
 
 # Output CSV file path
 output_file = 'output.csv'
