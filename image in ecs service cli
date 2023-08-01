@@ -2,3 +2,23 @@ aws ecs describe-services --cluster <YOUR_CLUSTER_NAME> --services <YOUR_SERVICE
 
 //images as well
 aws ecs describe-services --cluster <YOUR_CLUSTER_NAME> --services <YOUR_SERVICE_NAME> --query 'services[0].deployments[?status==`PRIMARY`].taskDefinition' --output text | xargs -I {} aws ecs describe-task-definition --task-definition {} --query 'taskDefinition.containerDefinitions[0].image'
+
+
+// for full cluster
+#!/bin/bash
+
+# Replace <YOUR_CLUSTER_NAME> with your actual ECS cluster name
+CLUSTER_NAME="<YOUR_CLUSTER_NAME>"
+
+# Get a list of all services in the cluster
+SERVICES=$(aws ecs list-services --cluster $CLUSTER_NAME --query 'serviceArns' --output text)
+
+# Loop through each service and get its running image URI
+for SERVICE in $SERVICES; do
+    TASK_DEFINITION=$(aws ecs describe-services --cluster $CLUSTER_NAME --services $SERVICE --query 'services[0].deployments[?status==`PRIMARY`].taskDefinition' --output text)
+    IMAGE_URI=$(aws ecs describe-task-definition --task-definition $TASK_DEFINITION --query 'taskDefinition.containerDefinitions[0].image' --output text)
+    
+    echo "Service: $SERVICE"
+    echo "Image URI: $IMAGE_URI"
+    echo "-------------------"
+done
