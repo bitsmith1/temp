@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# Replace '<your-cluster-name>' with the actual name of your ECS cluster
+cluster_name="your-ecs-cluster-name"
+
+services=$(aws ecs list-services --cluster $cluster_name --output text --query 'serviceArns')
+
+for service in $services; do
+    task_definitions=$(aws ecs describe-services --cluster $cluster_name --services $service --query 'services[0].tasks[*].taskDefinition')
+    for task_definition in $task_definitions; do
+        image=$(aws ecs describe-task-definition --task-definition $task_definition --query 'taskDefinition.containerDefinitions[0].image')
+        echo "Service: $service, Task Definition: $task_definition, Image: $image"
+    done
+done
