@@ -1,0 +1,1 @@
+aws ecs describe-services --cluster <YOUR_CLUSTER_NAME> --services <YOUR_SERVICE_NAME> --query 'services[0].deployments[?status==`PRIMARY`].taskDefinition' --output table
